@@ -11,7 +11,6 @@ public class GameBoyEmulator extends JFrame {
     private static final int SCALE_FACTOR = 3;
 
     private byte[] memory;
-    private int pc;
     private OpcodeHandler opcodeHandler;
 
     public GameBoyEmulator() {
@@ -21,7 +20,6 @@ public class GameBoyEmulator extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
         setFocusable(true);
-        pc = 0;
 
         InputHandler inputHandler = new InputHandler();
         addKeyListener(inputHandler);

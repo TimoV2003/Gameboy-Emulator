@@ -1,15 +1,27 @@
 public class OpcodeHandler {
-    private int pc;
+    private final Flags flags = new Flags();
+
+    //bytes
+    private byte opcode;
+    private byte d8 = 0;
+    //ints
+    private int pc = 0;
+    private int operand1 = 0;
+    private int operand2 = 0;
+    private int a = 0;
+    private int a16 = 0;
+    private int b = 0;
+    private int bc = 0;
+    private int f = 0;
+    private int hl = 0;
+    private int sp = 0;
 
     public OpcodeHandler(){
-        pc = 0;
     }
 
     public void fetchDecodeExecuteOpcode(byte[] memory) {
         // Fetch opcode from memory
-        int bc = 0;
-        int b = 0;
-        byte opcode = memory[pc];
+        opcode = memory[pc];
 
         // Decode and execute opcode
         switch (opcode) {
@@ -22,20 +34,56 @@ public class OpcodeHandler {
                 byte immediateLo = memory[pc + 1];
                 byte immediateHi = memory[pc + 2];
                 int immediateValue = ((immediateHi & 0xFF) << 8) | (immediateLo & 0xFF);
-                bc = immediateValue;
+                writeByteToMemory(bc, immediateValue, memory);
+                System.out.println("yes " + opcode);
                 break;
             case 0x02:
                 // Opcode 0x02: Load contents of register A into memory address pointed by register BC
-                int operand1 = bc;
-                int operand2 = opcode;
+                operand1 = bc;
+                operand2 = opcode;
                 writeByteToMemory(operand1, operand2, memory);
+                System.out.println("yes " + opcode);
                 break;
             case 0x03:
                 // Opcode 0x03: Increment register BC
                 bc = (bc + 1) & 0xFFFF;
+                System.out.println("yes " + opcode);
                 break;
             case 0x04:
-                b = (b + 1) & 0xFFFF;
+                b = (b + 1) & 0xFF;
+                flags.setNFlag(1);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x05:
+                b = (b - 1) & 0xFF;
+                flags.setNFlag(0);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x06:
+                operand1 = b;
+                operand2 = d8;
+                writeByteToMemory(operand1, operand2, memory);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x07:
+                // Opcode 0x07: Rotate register A left through carry
+                int carry = (a & 0x80) >> 7;
+                a = ((a << 1) | carry) & 0xFF;
+                f = carry << 4; // set carry flag to value of old bit 7
+                flags.setCFlag(f);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x08:
+                writeByteToMemory(a16, sp & 0xFF, memory); // Write the low byte of SP to memory at a16
+                writeByteToMemory(a16 + 1, (sp >> 8) & 0xFF, memory); // Write the high byte of SP to memory at a16 + 1
+                System.out.println("yes " + opcode);
+                break;
+            case 0x09:
+                bc += hl & 0xF;
+                flags.setNFlag(0);
+                flags.setHFlag(1);
+                System.out.println("yes " + opcode);
+                break;
             default:
                 // Unsupported opcode
                 System.out.println("Unsupported opcode: " + Integer.toHexString(opcode & 0xFF));
@@ -58,5 +106,6 @@ public class OpcodeHandler {
 
     private void writeByteToMemory(int address, int value, byte[] memory) {
         memory[address] = (byte) value;
+        System.out.println("Wrote to memory!");
     }
 }
