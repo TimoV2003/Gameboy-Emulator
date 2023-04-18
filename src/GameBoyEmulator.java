@@ -1,6 +1,8 @@
 import javax.swing.*;
+import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class GameBoyEmulator extends JFrame {
 
@@ -9,6 +11,8 @@ public class GameBoyEmulator extends JFrame {
     private static final int SCALE_FACTOR = 3;
 
     private byte[] memory;
+    private int pc;
+    private OpcodeHandler opcodeHandler;
 
     public GameBoyEmulator() {
         setTitle("Game Boy Emulator");
@@ -17,36 +21,64 @@ public class GameBoyEmulator extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
         setFocusable(true);
+        pc = 0;
+
+        InputHandler inputHandler = new InputHandler();
+        addKeyListener(inputHandler);
+        addMouseListener(inputHandler);
+        setFocusable(true);
+        requestFocus();
 
         memory = new byte[65536]; // 64KB of memory for Game Boy
 
         // Initialize the memory with appropriate values
+        Arrays.fill(memory, (byte) 0x00);
 
         // Load the ROM data into memory
+        loadRomData();
 
         // Start the emulation loop
         startEmulationLoop();
     }
 
     private void startEmulationLoop() {
+        CreateGraphics createGraphics = new CreateGraphics();
+        // Create a JPanel to represent the screen
+        JPanel screenPanel = new JPanel();
+        screenPanel.paintComponents(createGraphics.getGraphics());
+
+        // Add the screen panel to the JFrame
+        add(screenPanel);
+
+        // Ensure the JFrame is visible
+        setVisible(true);
+
+
+        opcodeHandler = new OpcodeHandler();
+
         while (true) {
-            fetchDecodeExecuteOpcode();
-
             // Decode and execute the opcode
+            opcodeHandler.fetchDecodeExecuteOpcode(memory);
 
-            // Update the screen
+            // Update the screen by calling repaint() on the screen panel
+            screenPanel.repaint();
 
             // Update input
 
             // Update timers
 
-            // Sleep for appropriate time to achieve desired frame rate
+            // Sleep for appropriate time to achieve desired frame rate, in this case around 60 fps
+            try {
+                Thread.sleep(16);
+            }catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
         }
     }
 
-    public void loadRomData(String filePath) {
+    public void loadRomData() {
         try {
-            FileInputStream fileInputStream = new FileInputStream(filePath);
+            FileInputStream fileInputStream = new FileInputStream("resources/Pokemon - Red Version (USA, Europe) (SGB Enhanced).gb");
             int bytesRead;
             int offset = 0;
             while ((bytesRead = fileInputStream.read(memory, offset, memory.length - offset)) > 0) {
@@ -59,54 +91,5 @@ public class GameBoyEmulator extends JFrame {
         }
     }
 
-    private void fetchDecodeExecuteOpcode() {
-        // Fetch opcode from memory
-        byte opcode = memory[pc];
 
-        // Decode and execute opcode
-        switch (opcode) {
-            case 0x00:
-                // Opcode 0x00: No operation
-                // Do nothing
-                break;
-            case 0x01:
-                // Opcode 0x01: Load 16-bit immediate value into register BC
-                byte immediateLo = memory[pc + 1];
-                byte immediateHi = memory[pc + 2];
-                int immediateValue = ((immediateHi & 0xFF) << 8) | (immediateLo & 0xFF);
-                bc = immediateValue;
-                break;
-            case 0x02:
-                // Opcode 0x02: Load contents of register A into memory address pointed by register BC
-                operand1 = bc;
-                operand2 = a;
-                writeByteToMemory(operand1, operand2);
-                break;
-            case 0x03:
-                // Opcode 0x03: Increment register BC
-                bc = (bc + 1) & 0xFFFF;
-                break;
-            default:
-                // Unsupported opcode
-                System.out.println("Unsupported opcode: " + Integer.toHexString(opcode & 0xFF));
-                break;
-        }
-
-        pc = (pc + getOpcodeSize(opcode)) & 0xFFFF;
-    }
-
-    private void writeByteToMemory(int address, int value) {
-        memory[address] = (byte) value;
-    }
-
-    private int getOpcodeSize(byte opcode) {
-        // Get size of opcode in bytes
-        // In this example, assuming all opcodes are 1 byte or 3 bytes in size
-        if ((opcode & 0xFF) == 0xCB) {
-            // Opcode 0xCB is a prefix opcode, which is followed by another opcode
-            return 2;
-        } else {
-            return 1;
-        }
-    }
 }
