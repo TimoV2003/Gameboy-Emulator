@@ -8,6 +8,7 @@ public class OpcodeHandler {
     public void fetchDecodeExecuteOpcode(byte[] memory) {
         // Fetch opcode from memory
         int bc = 0;
+        int b = 0;
         byte opcode = memory[pc];
 
         // Decode and execute opcode
@@ -33,6 +34,8 @@ public class OpcodeHandler {
                 // Opcode 0x03: Increment register BC
                 bc = (bc + 1) & 0xFFFF;
                 break;
+            case 0x04:
+                b = (b + 1) & 0xFFFF;
             default:
                 // Unsupported opcode
                 System.out.println("Unsupported opcode: " + Integer.toHexString(opcode & 0xFF));
