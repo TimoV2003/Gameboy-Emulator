@@ -1,5 +1,6 @@
+import Opcodes.OpcodeHandler;
+
 import javax.swing.*;
-import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;

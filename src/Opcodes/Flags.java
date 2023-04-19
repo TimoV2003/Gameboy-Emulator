@@ -1,3 +1,5 @@
+package Opcodes;
+
 public class Flags {
     private int Z;
     private int N;
