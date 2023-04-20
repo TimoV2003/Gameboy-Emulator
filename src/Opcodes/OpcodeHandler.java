@@ -6,7 +6,6 @@ public class OpcodeHandler {
 
     //bytes
     private byte opcode;
-    private byte d8 = 0;
     //ints
     private int pc = 0;
     private int carry = 0;
@@ -17,10 +16,13 @@ public class OpcodeHandler {
     private int BC = 0;
     private int C = 0;
     private int D = 0;
+    private int d8 = 0;
     private int d16 = 0;
     private int DE = 0;
+    private int E = 0;
     private int F = 0;
     private int HL = 0;
+    private int s8 = 0;
     private int SP = 0;
 
     public OpcodeHandler(){
@@ -110,6 +112,7 @@ public class OpcodeHandler {
                 System.out.println("yes " + opcode);
                 break;
             case 0x0F:
+            case 0x1F:
                 carry = A & 0x01;
                 A = (A >> 1) | (carry << 7);
                 flags.setZFlag(0);
@@ -158,6 +161,41 @@ public class OpcodeHandler {
                 flags.setNFlag(0);
                 System.out.println("yes " + opcode);
                 break;
+            case 0x18:
+                s8 = readByteFromMemory(pc, memory);
+                pc += s8;
+                System.out.println("yes " + opcode);
+                break;
+            case 0x19:
+                HL += DE & 0xF;
+                flags.setNFlag(0);
+                flags.setHFlag(1);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x1A:
+                writeByteToMemory(A, DE, memory);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x1B:
+                DE = (DE - 1) & 0xFFFF;
+                System.out.println("yes " + opcode);
+                break;
+            case 0x1C:
+                E = (E + 1) & 0xFF;
+                flags.setNFlag(1);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x1D:
+                E = (E - 1) & 0xFF;
+                flags.setNFlag(0);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x1E:
+                writeByteToMemory(E, d8, memory);
+                System.out.println("yes " + opcode);
+                break;
+            case 0x20:
+
             default:
                 // Unsupported opcode
                 System.out.println("Unsupported opcode: " + Integer.toHexString(opcode & 0xFF));
@@ -181,5 +219,10 @@ public class OpcodeHandler {
     private void writeByteToMemory(int address, int value, byte[] memory) {
         memory[address] = (byte) value;
         System.out.println("Wrote to memory!");
+    }
+
+    private int readByteFromMemory(int pc, byte[] memory){
+        System.out.println("Read from memory!");
+        return memory[pc];
     }
 }
