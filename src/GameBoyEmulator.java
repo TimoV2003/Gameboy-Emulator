@@ -1,5 +1,3 @@
-import Opcodes.OpcodeHandler;
-
 import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,7 +10,7 @@ public class GameBoyEmulator extends JFrame {
     private static final int SCALE_FACTOR = 3;
 
     private byte[] memory;
-    private OpcodeHandler opcodeHandler;
+    //private OpcodeHandler opcodeHandler;
 
     public GameBoyEmulator() {
         setTitle("Game Boy Emulator");
@@ -53,11 +51,11 @@ public class GameBoyEmulator extends JFrame {
         setVisible(true);
 
 
-        opcodeHandler = new OpcodeHandler();
+        //opcodeHandler = new OpcodeHandler();
 
         while (true) {
             // Decode and execute the opcode
-            opcodeHandler.fetchDecodeExecuteOpcode(memory);
+            //opcodeHandler.fetchDecodeExecuteOpcode(memory);
 
             // Update the screen by calling repaint() on the screen panel
             screenPanel.repaint();
