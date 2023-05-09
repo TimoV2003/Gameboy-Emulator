@@ -1,7 +1,8 @@
+import Gameboy.serial.Memory;
+
 import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class GameBoyEmulator extends JFrame {
 
@@ -9,8 +10,8 @@ public class GameBoyEmulator extends JFrame {
     private static final int SCREEN_HEIGHT = 144;
     private static final int SCALE_FACTOR = 3;
 
-    private byte[] memory;
-    //private OpcodeHandler opcodeHandler;
+    private Memory memory;
+
 
     public GameBoyEmulator() {
         setTitle("Game Boy Emulator");
@@ -26,10 +27,14 @@ public class GameBoyEmulator extends JFrame {
         setFocusable(true);
         requestFocus();
 
-        memory = new byte[65536]; // 64KB of memory for Game Boy
+         memory = new Memory(65536); // 64KB of memory for Game Boy
 
         // Initialize the memory with appropriate values
-        Arrays.fill(memory, (byte) 0x00);
+        for (int i = 0; i < 256; i++) {
+            memory.writeByte(i, (byte) i);
+        }
+
+        memory.setMemory();
 
         // Load the ROM data into memory
         loadRomData();
@@ -55,7 +60,7 @@ public class GameBoyEmulator extends JFrame {
 
         while (true) {
             // Decode and execute the opcode
-            //opcodeHandler.fetchDecodeExecuteOpcode(memory);
+
 
             // Update the screen by calling repaint() on the screen panel
             screenPanel.repaint();
@@ -78,7 +83,7 @@ public class GameBoyEmulator extends JFrame {
             FileInputStream fileInputStream = new FileInputStream("resources/Pokemon - Red Version (USA, Europe) (SGB Enhanced).gb");
             int bytesRead;
             int offset = 0;
-            while ((bytesRead = fileInputStream.read(memory, offset, memory.length - offset)) > 0) {
+            while ((bytesRead = fileInputStream.read(new byte[65536], offset, 65536 - offset)) > 0) {
                 offset += bytesRead;
             }
             fileInputStream.close();
